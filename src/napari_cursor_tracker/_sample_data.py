@@ -6,9 +6,11 @@ see: https://napari.org/stable/plugins/guides.html?#sample-data
 
 Replace code below according to your needs.
 """
+
 from __future__ import annotations
 
 import numpy
+import numpy as np
 
 
 def make_sample_data():
@@ -18,4 +20,14 @@ def make_sample_data():
     # Check the documentation for more information about the
     # add_image_kwargs
     # https://napari.org/stable/api/napari.Viewer.html#napari.Viewer.add_image
-    return [(numpy.random.rand(512, 512), {})]
+    data = numpy.ones((100, 50, 100), dtype=np.uint8) * 128
+    for i in range(100):
+        x = i
+        y = (
+            (numpy.sin(x / data.shape[2] * 2 * numpy.pi) + 1)
+            / 2
+            * data.shape[1]
+        )
+        y = int(y)
+        data[i, y : y + 5, x : x + 5] = 255
+    return [(data, {"name": "Cursor tracker sample"})]
