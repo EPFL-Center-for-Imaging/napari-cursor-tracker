@@ -83,14 +83,13 @@ class CursorTracker(QWidget):
             if self.track_cursor_active:
                 self.viewer.dims.events.current_step.connect(self.track_cursor)
                 if self.auto_play_checkbox.isChecked():
-                    pass
-                else:
-                    pass
+                    self.viewer.window.qt_viewer.dims.play()
 
             else:
                 self.viewer.dims.events.current_step.disconnect(
                     self.track_cursor
                 )
+                self.viewer.window.qt_viewer.dims.stop()
 
     def validate_ref_layer(self, layer):
         """
