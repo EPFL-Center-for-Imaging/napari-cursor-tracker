@@ -34,6 +34,9 @@ class CursorTracker(QWidget):
         self.viewer.layers.events.inserted.connect(
             self.add_ref_layer_to_combobox
         )
+        self.viewer.layers.events.removed.connect(
+            self.remove_ref_layer_from_combobox
+        )
         self.reference_layer_combobox.setToolTip(
             "Select the image layer on which you want to track. It is used to infer the number of time points for the points layer."
         )
@@ -45,7 +48,7 @@ class CursorTracker(QWidget):
         )
 
         self.add_btn = QPushButton("Add new layer")
-        self.add_btn.clicked.connect(self.add_new_layer)
+        self.add_btn.clicked.connect(self.add_new_points_layer)
         self.add_btn.setToolTip(
             "Add points layer for tracking. The name is taken form the 'Name of tracked point' field above and the number of time points is equal to the number of time points of the layer selected in the 'Reference image' drop-down menu."
         )
@@ -57,6 +60,12 @@ class CursorTracker(QWidget):
         )
 
         self.active_layer_combobox = QComboBox()
+        self.viewer.layers.events.inserted.connect(
+            self.add_active_layer_to_combobox
+        )
+        self.viewer.layers.events.removed.connect(
+            self.remove_active_layer_from_combobox
+        )
         self.active_layer_combobox.setToolTip(
             "Points layer which is modified during tracking."
         )
@@ -107,7 +116,35 @@ class CursorTracker(QWidget):
         if self.validate_ref_layer(layer):
             self.reference_layer_combobox.addItem(layer.name)
 
-    def add_new_layer(self):
+    def remove_ref_layer_from_combobox(self, event):
+        layer = event.value
+        for index in range(self.reference_layer_combobox.count()):
+            if layer.name == self.reference_layer_combobox.itemText(index):
+                self.reference_layer_combobox.removeItem(index)
+
+    def validate_active_layer(self, layer):
+        """
+        Check if the layer with the given name is suitable to be a
+        an active layer.
+        """
+        if layer.as_layer_data_tuple()[2] != "points":
+            return False
+        if layer.ndim < 3:
+            return False
+        return True
+
+    def add_active_layer_to_combobox(self, event):
+        layer = event.value
+        if self.validate_active_layer(layer):
+            self.active_layer_combobox.addItem(layer.name)
+
+    def remove_active_layer_from_combobox(self, event):
+        layer = event.value
+        for index in range(self.active_layer_combobox.count()):
+            if layer.name == self.active_layer_combobox.itemText(index):
+                self.active_layer_combobox.removeItem(index)
+
+    def add_new_points_layer(self):
         name = self.layer_name_textbox.text()
         props = {
             "name": name,
@@ -123,7 +160,6 @@ class CursorTracker(QWidget):
             ].data
         )
         self.viewer.add_points(data=data, **props)
-        self.active_layer_combobox.addItem(name)
 
     def track_cursor(self, event: napari.utils.events.Event):
         """Updates Points layer and depth data based on cursor position."""
