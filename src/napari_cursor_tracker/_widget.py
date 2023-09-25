@@ -12,10 +12,12 @@ from typing import TYPE_CHECKING
 import napari.utils.events
 import numpy as np
 from qtpy.QtWidgets import (
+    QCheckBox,
     QComboBox,
-    QHBoxLayout,
+    QLabel,
     QLineEdit,
     QPushButton,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -28,24 +30,46 @@ class CursorTracker(QWidget):
         super().__init__()
         self.viewer = napari_viewer
 
-        self.setLayout(QHBoxLayout())
-
         self.reference_layer_combobox = QComboBox()
-        self.layout().addWidget(self.reference_layer_combobox)
         self.viewer.layers.events.inserted.connect(
             self.add_ref_layer_to_combobox
         )
+        self.reference_layer_combobox.setToolTip(
+            "Select the image layer on which you want to track. It is used to infer the number of time points for the points layer."
+        )
 
         self.layer_name_textbox = QLineEdit(self)
-        self.layer_name_textbox.setText("Tracked points")
+        self.layer_name_textbox.setText("Tracked point")
+        self.layer_name_textbox.setToolTip(
+            "Name of the points layer that is generated for tracking."
+        )
 
         self.add_btn = QPushButton("Add new layer")
         self.add_btn.clicked.connect(self.add_new_layer)
-
-        self.layout().addWidget(self.add_btn)
+        self.add_btn.setToolTip(
+            "Add points layer for tracking. The name is taken form the 'Name of tracked point' field above and the number of time points is equal to the number of time points of the layer selected in the 'Reference image' drop-down menu."
+        )
+        self.auto_play_checkbox = QCheckBox(
+            "Auto play when tracking is started"
+        )
+        self.auto_play_checkbox.setToolTip(
+            "Automatically start playing the images when the tracking is started."
+        )
 
         self.active_layer_combobox = QComboBox()
+        self.active_layer_combobox.setToolTip(
+            "Points layer which is modified during tracking."
+        )
+
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(QLabel("Reference image"))
+        self.layout().addWidget(self.reference_layer_combobox)
+        self.layout().addWidget(QLabel("Name of tracked point"))
+        self.layout().addWidget(self.layer_name_textbox)
+        self.layout().addWidget(self.add_btn)
+        self.layout().addWidget(QLabel("Active layer"))
         self.layout().addWidget(self.active_layer_combobox)
+        self.layout().addWidget(self.auto_play_checkbox)
 
         self.viewer.text_overlay.visible = True
         self.viewer.text_overlay.text = "Press 't' to start/stop tracking"
@@ -58,6 +82,11 @@ class CursorTracker(QWidget):
             self.track_cursor_active = not self.current
             if self.track_cursor_active:
                 self.viewer.dims.events.current_step.connect(self.track_cursor)
+                if self.auto_play_checkbox.isChecked():
+                    pass
+                else:
+                    pass
+
             else:
                 self.viewer.dims.events.current_step.disconnect(
                     self.track_cursor
