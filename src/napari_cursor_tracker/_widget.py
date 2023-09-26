@@ -31,12 +31,8 @@ class CursorTracker(QWidget):
         self.viewer = napari_viewer
 
         self.reference_layer_combobox = QComboBox()
-        self.viewer.layers.events.inserted.connect(
-            self.add_ref_layer_to_combobox
-        )
-        self.viewer.layers.events.removed.connect(
-            self.remove_ref_layer_from_combobox
-        )
+        for layer in self.viewer.layers:
+            self.add_ref_layer_to_combobox(layer)
         self.reference_layer_combobox.setToolTip(
             "Select the image layer on which you want to track. It is used to infer the number of time points for the points layer."
         )
@@ -60,15 +56,14 @@ class CursorTracker(QWidget):
         )
 
         self.active_layer_combobox = QComboBox()
-        self.viewer.layers.events.inserted.connect(
-            self.add_active_layer_to_combobox
-        )
-        self.viewer.layers.events.removed.connect(
-            self.remove_active_layer_from_combobox
-        )
+        for layer in self.viewer.layers:
+            self.add_active_layer_to_combobox(layer)
         self.active_layer_combobox.setToolTip(
             "Points layer which is modified during tracking."
         )
+
+        self.viewer.layers.events.inserted.connect(self._on_inserted_layer)
+        self.viewer.layers.events.removed.connect(self._on_removed_layer)
 
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(QLabel("Reference image"))
@@ -100,6 +95,16 @@ class CursorTracker(QWidget):
                 )
                 self.viewer.window.qt_viewer.dims.stop()
 
+    def _on_inserted_layer(self, event):
+        layer = event.value
+        self.add_ref_layer_to_combobox(layer)
+        self.add_active_layer_to_combobox(layer)
+
+    def _on_removed_layer(self, event):
+        layer = event.value
+        self.remove_ref_layer_from_combobox(layer)
+        self.remove_active_layer_from_combobox(layer)
+
     def validate_ref_layer(self, layer):
         """
         Check if the layer with the given name is suitable to be a
@@ -111,13 +116,11 @@ class CursorTracker(QWidget):
             return False
         return True
 
-    def add_ref_layer_to_combobox(self, event):
-        layer = event.value
+    def add_ref_layer_to_combobox(self, layer):
         if self.validate_ref_layer(layer):
             self.reference_layer_combobox.addItem(layer.name)
 
-    def remove_ref_layer_from_combobox(self, event):
-        layer = event.value
+    def remove_ref_layer_from_combobox(self, layer):
         for index in range(self.reference_layer_combobox.count()):
             if layer.name == self.reference_layer_combobox.itemText(index):
                 self.reference_layer_combobox.removeItem(index)
@@ -133,13 +136,11 @@ class CursorTracker(QWidget):
             return False
         return True
 
-    def add_active_layer_to_combobox(self, event):
-        layer = event.value
+    def add_active_layer_to_combobox(self, layer):
         if self.validate_active_layer(layer):
             self.active_layer_combobox.addItem(layer.name)
 
-    def remove_active_layer_from_combobox(self, event):
-        layer = event.value
+    def remove_active_layer_from_combobox(self, layer):
         for index in range(self.active_layer_combobox.count()):
             if layer.name == self.active_layer_combobox.itemText(index):
                 self.active_layer_combobox.removeItem(index)
