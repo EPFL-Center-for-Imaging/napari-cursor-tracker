@@ -10,7 +10,6 @@ Replace code below according to your needs.
 from __future__ import annotations
 
 import numpy
-import numpy as np
 
 
 def make_sample_data():
@@ -20,7 +19,7 @@ def make_sample_data():
     # Check the documentation for more information about the
     # add_image_kwargs
     # https://napari.org/stable/api/napari.Viewer.html#napari.Viewer.add_image
-    data = numpy.ones((100, 50, 100), dtype=np.uint8) * 128
+    data = numpy.ones((100, 50, 100), dtype=numpy.uint8) * 128
     for i in range(100):
         x = i
         y = (
