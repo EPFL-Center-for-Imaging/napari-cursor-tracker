@@ -11,9 +11,9 @@ Plugin for easy manual annotation/tracking of 3D or 2D + t dataset by following 
 
 ----------------------------------
 
+<!--
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
 
-<!--
 Don't miss the full getting started guide to set up your new package:
 https://github.com/napari/cookiecutter-napari-plugin#getting-started
 
@@ -27,7 +27,45 @@ You can install `napari-cursor-tracker` via [pip]:
 
     pip install napari-cursor-tracker
 
+## Getting Started with napari-cursor-tracker
 
+Welcome to `napari-cursor-tracker`, a tool that simplifies the annotation of points in stacks of images by tracking your cursor's position. This documentation will guide you through the process of setting up and using this plugin effectively.
+
+### Points Layer Setup
+
+Before you can start tracking, you need to create a points layer, which will store the positions of your cursor for each image in the stack. Here's how to set it up:
+
+1. **Choose a Reference Image:** Start by selecting a "Reference image" from your image stack. The number of frames or slices in the reference image determines how many points your new layer will have (one per frame/slice).
+
+2. **Specify Point Name:** Assign a name to the tracked point. This name will also serve as the name for the new layer. This step is particularly useful when tracking multiple points.
+
+3. **Create the Layer:** Click on "Add new layer" to create the points layer. Initially, all points will be located at the origin (0, 0, 0), but their positions will be updated as you start tracking.
+
+### Tracking Your Cursor
+
+Now that you have set up the points layer, you can start tracking your cursor's position. Follow these steps:
+
+1. **Select the Active Layer:** Choose the points layer where you want to save the tracking results as the "Active layer."
+
+2. **Initiate Tracking:** Begin tracking your cursor's position by pressing the 't' key on your keyboard. To stop tracking, press 't' again. If the "Auto play when tracking is started" option is enabled, playback will start automatically when you press 't'. Alternatively, you can manually scroll through the images, and your cursor's position will be saved whenever the slice/frame index changes.
+
+3. **Customize Playback:** To facilitate or expedite tracking, you can adjust playback parameters as needed.
+
+### Tracking Multiple Points
+
+If you need to track multiple points of interest, you can follow these steps:
+
+1. **Create Individual Layers:** Create a separate points layer for each point you want to track.
+
+2. **Select Active Layer:** Use the "Active layer" dropdown menu to select the specific points layer you want to work with.
+
+3. **Start Tracking:** Begin tracking the selected point following the previously mentioned tracking process.
+
+### Saving Your Results
+
+The results from your tracking sessions can be saved as CSV files. Any points that were not tracked will be marked at the origin point (0, 0, 0) in the saved file.
+
+With these guidelines, you should be well-prepared to efficiently annotate points in your image stacks using `napari-cursor-tracker`. Happy tracking!
 
 
 ## Contributing
