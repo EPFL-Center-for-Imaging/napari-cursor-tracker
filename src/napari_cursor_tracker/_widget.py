@@ -14,6 +14,9 @@ import numpy as np
 from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -54,6 +57,7 @@ class CursorTracker(QWidget):
         self.auto_play_checkbox.setToolTip(
             "Automatically start playing the images when the tracking is started."
         )
+        self.auto_play_checkbox.setChecked(True)
 
         self.active_layer_combobox = QComboBox()
         for layer in self.viewer.layers:
@@ -65,6 +69,33 @@ class CursorTracker(QWidget):
         self.viewer.layers.events.inserted.connect(self._on_inserted_layer)
         self.viewer.layers.events.removed.connect(self._on_removed_layer)
 
+        self.playback_param_groupbox = QGroupBox("Playback parameters")
+        self.playback_param_layout = QGridLayout()
+        self.playback_param_groupbox.setLayout(self.playback_param_layout)
+
+        self.fps_spinbox = QDoubleSpinBox()
+        self.fps_spinbox.setRange(0, 1000)
+        self.fps_spinbox.setSingleStep(0.1)
+        self.fps_spinbox.setValue(10)
+        self.fps_spinbox.valueChanged.connect(self.update_fps)
+
+        self.loop_combobox = QComboBox()
+        self.loop_combobox.addItems(["once", "loop", "back-and-forth"])
+        self.loop_combobox.currentTextChanged.connect(self.update_loop_mode)
+
+        self.direction_combobox = QComboBox()
+        self.direction_combobox.addItems(["forward", "reverse"])
+        self.direction_combobox.currentTextChanged.connect(
+            self.update_direction
+        )
+
+        self.playback_param_layout.addWidget(QLabel("Frames per second"))
+        self.playback_param_layout.addWidget(self.fps_spinbox)
+        self.playback_param_layout.addWidget(QLabel("Loop mode"))
+        self.playback_param_layout.addWidget(self.loop_combobox)
+        self.playback_param_layout.addWidget(QLabel("Direction"))
+        self.playback_param_layout.addWidget(self.direction_combobox)
+
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(QLabel("Reference image"))
         self.layout().addWidget(self.reference_layer_combobox)
@@ -74,6 +105,7 @@ class CursorTracker(QWidget):
         self.layout().addWidget(QLabel("Active layer"))
         self.layout().addWidget(self.active_layer_combobox)
         self.layout().addWidget(self.auto_play_checkbox)
+        self.layout().addWidget(self.playback_param_groupbox)
 
         self.viewer.text_overlay.visible = True
         self.viewer.text_overlay.text = "Press 't' to start/stop tracking"
@@ -87,7 +119,13 @@ class CursorTracker(QWidget):
             if self.track_cursor_active:
                 self.viewer.dims.events.current_step.connect(self.track_cursor)
                 if self.auto_play_checkbox.isChecked():
-                    self.viewer.window.qt_viewer.dims.play()
+                    settings = napari.settings.get_settings()
+                    fps = settings.application.playback_fps
+                    mode = settings.application.playback_mode
+                    self.viewer.window.qt_viewer.dims.play(
+                        fps=fps,
+                        loop_mode=mode,
+                    )
 
             else:
                 self.viewer.dims.events.current_step.disconnect(
@@ -177,3 +215,23 @@ class CursorTracker(QWidget):
             y_pos,
         ]
         points_layer.refresh()
+
+    def update_fps(self, fps: float):
+        settings = napari.settings.get_settings()
+        sign = np.sign(settings.application.playback_fps)
+        settings.application.playback_fps = fps * sign
+
+    def update_loop_mode(self, mode: str):
+        settings = napari.settings.get_settings()
+        settings.application.playback_mode = mode
+
+    def update_direction(self, direction: str):
+        settings = napari.settings.get_settings()
+        if direction == "reverse":
+            settings.application.playback_fps = -1 * np.abs(
+                settings.application.playback_fps
+            )
+        elif direction == "forward":
+            settings.application.playback_fps = np.abs(
+                settings.application.playback_fps
+            )
