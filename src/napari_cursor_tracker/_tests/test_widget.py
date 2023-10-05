@@ -1,4 +1,6 @@
+import napari
 import numpy as np
+import pytest
 
 from napari_cursor_tracker import CursorTracker
 
@@ -69,3 +71,39 @@ def test_cursor_tracker(make_napari_viewer):
         cursor_tracker_widget.active_layer_combobox.itemText(1)
         == test_points_2_name
     )
+
+
+@pytest.fixture(params=[1, 10, 100])
+def fps(request):
+    return request.param
+
+
+@pytest.fixture(params=["forward", "reverse"])
+def direction(request):
+    return request.param
+
+
+@pytest.fixture(params=["once", "loop", "back_and_forth"])
+def loop_mode(request):
+    return request.param
+
+
+def test_playback_parameter_interface(
+    make_napari_viewer, fps, loop_mode, direction
+):
+    viewer = make_napari_viewer()
+
+    # create the widget, passing in the viewer
+    cursor_tracker_widget = CursorTracker(viewer)
+
+    cursor_tracker_widget.fps_spinbox.setValue(fps)
+    cursor_tracker_widget.loop_combobox.setCurrentText(loop_mode)
+    cursor_tracker_widget.direction_combobox.setCurrentText(direction)
+
+    settings = napari.settings.get_settings()
+    assert settings.application.playback_mode == loop_mode
+    assert np.abs(settings.application.playback_fps) == fps
+    if direction == "forward":
+        assert np.sign(settings.application.playback_fps) == 1
+    else:
+        assert np.sign(settings.application.playback_fps) == -1
