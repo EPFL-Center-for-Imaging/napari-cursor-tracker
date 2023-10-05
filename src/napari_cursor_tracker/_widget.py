@@ -73,14 +73,17 @@ class CursorTracker(QWidget):
         self.playback_param_layout = QGridLayout()
         self.playback_param_groupbox.setLayout(self.playback_param_layout)
 
+        settings = napari.settings.get_settings()
         self.fps_spinbox = QDoubleSpinBox()
         self.fps_spinbox.setRange(0, 1000)
         self.fps_spinbox.setSingleStep(0.1)
         self.fps_spinbox.setValue(10)
+        settings.application.playback_fps = 10
         self.fps_spinbox.valueChanged.connect(self.update_fps)
 
         self.loop_combobox = QComboBox()
         self.loop_combobox.addItems(["once", "loop", "back-and-forth"])
+        settings.application.playback_mode = "once"
         self.loop_combobox.currentTextChanged.connect(self.update_loop_mode)
 
         self.direction_combobox = QComboBox()
@@ -117,6 +120,12 @@ class CursorTracker(QWidget):
             self.current = self.track_cursor_active
             self.track_cursor_active = not self.current
             if self.track_cursor_active:
+                if self.active_layer_combobox.currentText() == "":
+                    napari.utils.notifications.show_error(
+                        "No active layer has been selected. If you haven't done so yet, create one using the 'Add new layer' button. Then select it as the active layer."
+                    )
+                    self.track_cursor_active = False
+                    return
                 self.viewer.dims.events.current_step.connect(self.track_cursor)
                 if self.auto_play_checkbox.isChecked():
                     settings = napari.settings.get_settings()
