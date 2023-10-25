@@ -9,6 +9,7 @@ Replace code below according to your needs.
 
 from typing import TYPE_CHECKING
 
+import magicgui
 import napari.utils.events
 import numpy as np
 from qtpy.QtWidgets import (
@@ -33,10 +34,17 @@ class CursorTracker(QWidget):
         super().__init__()
         self.viewer = napari_viewer
 
-        self.reference_layer_combobox = QComboBox()
-        for layer in self.viewer.layers:
-            self.add_ref_layer_to_combobox(layer)
-        self.reference_layer_combobox.setToolTip(
+        self.reference_layer = magicgui.widgets.create_widget(
+            annotation=napari.layers.Image,
+            label="Reference image",
+        )
+        self.viewer.layers.events.inserted.connect(
+            self.reference_layer.reset_choices
+        )
+        self.viewer.layers.events.removed.connect(
+            self.reference_layer.reset_choices
+        )
+        self.reference_layer.native.setToolTip(
             "Select the image layer on which you want to track. It is used to infer the number of time points for the points layer."
         )
 
@@ -59,15 +67,19 @@ class CursorTracker(QWidget):
         )
         self.auto_play_checkbox.setChecked(True)
 
-        self.active_layer_combobox = QComboBox()
-        for layer in self.viewer.layers:
-            self.add_active_layer_to_combobox(layer)
-        self.active_layer_combobox.setToolTip(
+        self.active_layer = magicgui.widgets.create_widget(
+            annotation=napari.layers.Points,
+            label="Active layer",
+        )
+        self.viewer.layers.events.inserted.connect(
+            self.active_layer.reset_choices
+        )
+        self.viewer.layers.events.removed.connect(
+            self.active_layer.reset_choices
+        )
+        self.active_layer.native.setToolTip(
             "Points layer which is modified during tracking."
         )
-
-        self.viewer.layers.events.inserted.connect(self._on_inserted_layer)
-        self.viewer.layers.events.removed.connect(self._on_removed_layer)
 
         self.playback_param_groupbox = QGroupBox("Playback parameters")
         self.playback_param_layout = QGridLayout()
@@ -101,12 +113,12 @@ class CursorTracker(QWidget):
 
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(QLabel("Reference image"))
-        self.layout().addWidget(self.reference_layer_combobox)
+        self.layout().addWidget(self.reference_layer.native)
         self.layout().addWidget(QLabel("Name of tracked point"))
         self.layout().addWidget(self.layer_name_textbox)
         self.layout().addWidget(self.add_btn)
         self.layout().addWidget(QLabel("Active layer"))
-        self.layout().addWidget(self.active_layer_combobox)
+        self.layout().addWidget(self.active_layer.native)
         self.layout().addWidget(self.auto_play_checkbox)
         self.layout().addWidget(self.playback_param_groupbox)
 
@@ -121,7 +133,7 @@ class CursorTracker(QWidget):
             self.current = self.track_cursor_active
             self.track_cursor_active = not self.current
             if self.track_cursor_active:
-                if self.active_layer_combobox.currentText() == "":
+                if self.active_layer.value is None:
                     napari.utils.notifications.show_error(
                         "No active layer has been selected. If you haven't done so yet, create one using the 'Add new layer' button. Then select it as the active layer."
                     )
@@ -144,56 +156,6 @@ class CursorTracker(QWidget):
                 )
                 self.viewer.window.qt_viewer.dims.stop()
 
-    def _on_inserted_layer(self, event):
-        layer = event.value
-        self.add_ref_layer_to_combobox(layer)
-        self.add_active_layer_to_combobox(layer)
-
-    def _on_removed_layer(self, event):
-        layer = event.value
-        self.remove_ref_layer_from_combobox(layer)
-        self.remove_active_layer_from_combobox(layer)
-
-    def validate_ref_layer(self, layer):
-        """
-        Check if the layer with the given name is suitable to be a
-        reference layer.
-        """
-        if layer.as_layer_data_tuple()[2] != "image":
-            return False
-        if layer.ndim < 3:
-            return False
-        return True
-
-    def add_ref_layer_to_combobox(self, layer):
-        if self.validate_ref_layer(layer):
-            self.reference_layer_combobox.addItem(layer.name)
-
-    def remove_ref_layer_from_combobox(self, layer):
-        for index in range(self.reference_layer_combobox.count()):
-            if layer.name == self.reference_layer_combobox.itemText(index):
-                self.reference_layer_combobox.removeItem(index)
-
-    def validate_active_layer(self, layer):
-        """
-        Check if the layer with the given name is suitable to be a
-        an active layer.
-        """
-        if layer.as_layer_data_tuple()[2] != "points":
-            return False
-        if layer.ndim < 3:
-            return False
-        return True
-
-    def add_active_layer_to_combobox(self, layer):
-        if self.validate_active_layer(layer):
-            self.active_layer_combobox.addItem(layer.name)
-
-    def remove_active_layer_from_combobox(self, layer):
-        for index in range(self.active_layer_combobox.count()):
-            if layer.name == self.active_layer_combobox.itemText(index):
-                self.active_layer_combobox.removeItem(index)
-
     def add_new_points_layer(self):
         name = self.layer_name_textbox.text()
         props = {
@@ -204,20 +166,14 @@ class CursorTracker(QWidget):
             "opacity": 100,
             "face_color": "red",
         }
-        data = [[0, 0, 0]] * len(
-            self.viewer.layers[
-                self.reference_layer_combobox.currentText()
-            ].data
-        )
+        data = [[0, 0, 0]] * len(self.reference_layer.value.data)
         self.viewer.add_points(data=data, **props)
 
     def track_cursor(self, event: napari.utils.events.Event):
         """Updates Points layer and depth data based on cursor position."""
         _, x_pos, y_pos = np.array(self.viewer.cursor.position).astype(int)
 
-        points_layer = self.viewer.layers[
-            self.active_layer_combobox.currentText()
-        ]
+        points_layer = self.active_layer.value
 
         step = self.previous_step
         size = points_layer.size[step]

@@ -20,8 +20,7 @@ def test_cursor_tracker(make_napari_viewer):
 
     # Check that example image is in reference drop-down menue
     assert (
-        cursor_tracker_widget.reference_layer_combobox.currentText()
-        == test_image_1_name
+        cursor_tracker_widget.reference_layer.value.name == test_image_1_name
     )
 
     # Add a second example image
@@ -33,21 +32,21 @@ def test_cursor_tracker(make_napari_viewer):
 
     # Check that both example images are available in drop-down menu
     assert (
-        cursor_tracker_widget.reference_layer_combobox.itemText(0)
+        cursor_tracker_widget.reference_layer.native.itemText(0)
         == test_image_1_name
     )
     assert (
-        cursor_tracker_widget.reference_layer_combobox.itemText(1)
+        cursor_tracker_widget.reference_layer.native.itemText(1)
         == test_image_2_name
     )
 
     # Delete first example image and check that it is no longer present in the drop-down menu
     del viewer.layers[test_image_1_name]
     assert (
-        cursor_tracker_widget.reference_layer_combobox.itemText(0)
+        cursor_tracker_widget.reference_layer.native.itemText(0)
         == test_image_2_name
     )
-    assert cursor_tracker_widget.reference_layer_combobox.itemText(1) == ""
+    assert cursor_tracker_widget.reference_layer.native.itemText(1) == ""
 
     # Change name for new layer in text field
     test_points_2_name = "Test points layer"
@@ -64,11 +63,11 @@ def test_cursor_tracker(make_napari_viewer):
 
     # Check that the pre-plugin and new points layers were added to the active layers drop-down menu
     assert (
-        cursor_tracker_widget.active_layer_combobox.itemText(0)
+        cursor_tracker_widget.active_layer.native.itemText(0)
         == test_points_1_name
     )
     assert (
-        cursor_tracker_widget.active_layer_combobox.itemText(1)
+        cursor_tracker_widget.active_layer.native.itemText(1)
         == test_points_2_name
     )
 
