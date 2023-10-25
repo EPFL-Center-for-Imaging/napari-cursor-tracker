@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=42.0.0", "wheel", "setuptools_scm"]
+requires = ["setuptools>=64", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools_scm]
-write_to = "src/napari_hough_circle_detector/_version.py"
+write_to = "src/napari_cursor_tracker/_version.py"
 
 [tool.black]
 line-length = 79
