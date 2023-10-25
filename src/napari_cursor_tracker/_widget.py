@@ -114,6 +114,7 @@ class CursorTracker(QWidget):
         self.viewer.text_overlay.text = "Press 't' to start/stop tracking"
 
         self.track_cursor_active = False
+        self.previous_step = np.nan
 
         @self.viewer.bind_key("t")
         def toggle_tracking(event: napari.utils.events.Event):
@@ -126,6 +127,7 @@ class CursorTracker(QWidget):
                     )
                     self.track_cursor_active = False
                     return
+                self.previous_step = self.viewer.dims.current_step[0]
                 self.viewer.dims.events.current_step.connect(self.track_cursor)
                 if self.auto_play_checkbox.isChecked():
                     settings = napari.settings.get_settings()
@@ -213,17 +215,20 @@ class CursorTracker(QWidget):
         """Updates Points layer and depth data based on cursor position."""
         _, x_pos, y_pos = np.array(self.viewer.cursor.position).astype(int)
 
-        current_time_step = self.viewer.dims.current_step[0]
-
         points_layer = self.viewer.layers[
             self.active_layer_combobox.currentText()
         ]
-        points_layer.data[current_time_step] = [
-            current_time_step,
-            x_pos,
-            y_pos,
+
+        step = self.previous_step
+        size = points_layer.size[step]
+
+        points_layer.data[step] = [
+            step,
+            x_pos + size / 2,
+            y_pos + size / 2,
         ]
         points_layer.refresh()
+        self.previous_step = self.viewer.dims.current_step[0]
 
     def update_fps(self, fps: float):
         settings = napari.settings.get_settings()
