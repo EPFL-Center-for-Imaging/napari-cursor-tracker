@@ -1,4 +1,11 @@
+<img style="float: right;" src="https://imaging.epfl.ch/resources/logo-for-gitlab.svg">
+
+
 # napari-cursor-tracker
+
+Plugin for easy manual annotation/tracking of 3D or 2D + t dataset by following the cursor.
+Developed by the [EPFL Center for Imaging](https://imaging.epfl.ch/) as part of a project for the [Thermomechanical Metallurgy Laboratory](https://www.epfl.ch/labs/lmtm/) in Sep 2023.
+
 
 [![License BSD-3](https://img.shields.io/pypi/l/napari-cursor-tracker.svg?color=green)](https://github.com/EPFL-Center-for-Imaging/napari-cursor-tracker/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/napari-cursor-tracker.svg?color=green)](https://pypi.org/project/napari-cursor-tracker)
@@ -6,8 +13,6 @@
 [![tests](https://github.com/EPFL-Center-for-Imaging/napari-cursor-tracker/workflows/tests/badge.svg)](https://github.com/EPFL-Center-for-Imaging/napari-cursor-tracker/actions)
 [![codecov](https://codecov.io/gh/EPFL-Center-for-Imaging/napari-cursor-tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/EPFL-Center-for-Imaging/napari-cursor-tracker)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cursor-tracker)](https://napari-hub.org/plugins/napari-cursor-tracker)
-
-Plugin for easy manual annotation/tracking of 3D or 2D + t dataset by following the cursor.
 
 ----------------------------------
 
