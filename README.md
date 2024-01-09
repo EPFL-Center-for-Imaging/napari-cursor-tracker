@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/napari-cursor-tracker.svg?color=green)](https://pypi.org/project/napari-cursor-tracker)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-cursor-tracker.svg?color=green)](https://python.org)
 [![tests](https://github.com/EPFL-Center-for-Imaging/napari-cursor-tracker/workflows/tests/badge.svg)](https://github.com/EPFL-Center-for-Imaging/napari-cursor-tracker/actions)
-[![codecov](https://codecov.io/gh/faymanns/napari-cursor-tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/faymanns/napari-cursor-tracker)
+[![codecov](https://codecov.io/gh/EPFL-Center-for-Imaging/napari-cursor-tracker/branch/main/graph/badge.svg)](https://codecov.io/gh/EPFL-Center-for-Imaging/napari-cursor-tracker)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-cursor-tracker)](https://napari-hub.org/plugins/napari-cursor-tracker)
 
 Plugin for easy manual annotation/tracking of 3D or 2D + t dataset by following the cursor.
